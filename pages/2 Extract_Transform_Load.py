@@ -5,14 +5,18 @@ import time
 # import numpy as np
 import requests
 st.set_page_config(layout="wide")
-col1,col2,col3,col4 = st.columns(4)
+col1,col2,col3,col4,col5 = st.columns(5)
 
-# First row
 with col1:
-    st.image("Images\etl.png",width=150)
+    st.image('Images/Data Quality.jpg',width=120)
+    st.subheader("Data Quality System")
+    st.caption("Data Quality System Review Done.")
+# First row
+with col2:
+    st.image("Images/etl.png",width=120)
     st.subheader("Extract Transform Load")
     st.caption("Currently in Extract Transform and Load")   
-st.progress(10)
+st.progress(30)
  
 
 def call_adf_api(headers):

@@ -28,21 +28,25 @@ today = date.today()
 import joblib
 
 st.set_page_config(layout="wide")
-col1,col2,col3,col4 = st.columns(4)
-
-
+col1,col2,col3,col4,col5 = st.columns(5)
 with col1:
-    st.image("Images\etl.png",width=150)
+    st.image('Images/Data Quality.jpg',width=120)
+    st.subheader("Data Quality System")
+    st.caption("Data Quality System Review Done.")
+
+
+with col2:
+    st.image("Images/etl.png",width=120)
     st.subheader("Extract Transform Load") 
     st.caption("ETL is completed")
   
-with col2:
-    st.image("Images\synthesis.png",width=150)
+with col3:
+    st.image("Images/synthesis.png",width=120)
     st.subheader("Data Synthesis and Generation")
     st.caption("Data Synthesis is done.") 
   
-with col3:
-   st.image("Images/claimPrediction.png",width=150)
+with col4:
+   st.image("Images/claimPrediction.png",width=120)
    st.subheader("Risk Score Prediction")
    st.caption("Currently in Claim Prediction") 
    
@@ -50,7 +54,7 @@ st.progress(75)
 
 
 st.title('Claim Prediction')
-st.write('This app predicts whether for a given Policy there will be calim or not')
+st.write('This app predicts the percentage chances of Claim Filling based on the details of the Policy')
 st.header('Enter the following information:')
 executive = st.selectbox('Executive', ['JAIKISHIN (S)', 'AMIT', 'RAJENDRA', 'BR', 'MAHESH', 'ASHOK', 'RAJU (S)', 'MANOHAR (S)', 'DIRECT', 'AJI', 'RAHEEM', 'JAIKISHIN (SNC)', 'RENNIE', 'FARHAN', 'MANOHAR', 'MANOHAR (SNC)', 'NELSON', 'AJITHVP', 'AJITH', 'SUVARNA', 'SHADAB/A.RA', 'JOHN', 'UDASI/AF', 'SHADAB/AF', 'JAIKISHIN', 'JOHN/AF', 'NIJIL/AF', 'KEVIN', 'FARHAN/SPS', 'HABEEB/AZM', 'KISHORE/SPS', 'SHADAB', 'AMIT (S)', 'AJITH/SPS', 'RAHEEM/AF', 'SUVARNA/SPS', 'NELSON (S)', 'RENNIE/AF', 'RAHEEM/AAC', 'HABEEB', 'NIJIL', 'AJI/SPS', 'NELSON (SNC)', 'ASHOK (S)', 'UDASI', 'RONALD', 'RAHEEM/AYM', 'RAHEEM/WA', 'RAHEEM/EC', 'KISHORE', 'RAHEEM/AL NBD', 'UDASI/RCRV', 'FARHAN/Y', 'UDASI/DL', 'RENNIE/YOUSUF', 'RAHEEM/AVR', 'AKHIL', 'FARHAN/NAIM', 'RAHEEM/SCM', 'RENNIE/CR', 'CHETAN', 'VIGNESH', 'SUVARNA/VCR', 'NITHEESH', 'ASHOK/RK', 'NIJIL/OASIS CARS', 'AMIT/PB', 'KAJAL', 'FAIZAN', 'SUVARNA/SC', 'SAXENA', 'ANAND', 'AMRUTHA', 'VAIBHAV', 'ASHOK/OK', 'ASHOK/STAIGHT', 'ASHOK/STAIGHT 5', 'FARHAN/A.RA', 'LALIT', 'DANIEL', 'BINDRA', 'RAHUL', 'ALBIN', 'UDASI/SA', 'RENNIE/YOUSUF/MGCARS', 'KHURRAM', 'CHETAN/LALIT DWC', 'AJITH/UDASI DWC', 'HABEEB/DANIEL DWC', 'SUVARNA/AJITHVP DWC', 'RENNIE/VAIBHAV DWC', 'JOHN/RAJU DWC', 'UDASI/ALTAYER', 'JOHN/AJITHVP', 'RENNIE/AJI', 'DANIEL/AJI', 'UDASI/AJI', 'DANIEL/AJITHVP', 'RENNIE/AJITHVP', 'SUVARNA/AJITHVP', 'CHETAN/AJITHVP', 'JOHN/DEALER', 'VAIBHAV/AJI', 'UDASI/AJITHVP', 'AMINAT', 'RAJESH', 'MAHESH/DANIEL DWC', 'VAIBHAV/AJITHVP', 'JOHN/RAJESH DWC', 'MAHESH/DEALER'])
 
@@ -164,24 +168,25 @@ encoder = joblib.load("Models/encoder.pkl")
 
 
 # predictor = joblib.load("Models/randomFC.pkl")
-data = bz2.BZ2File('Compressed_Models/comp_randomFC.pbz2','rb')
+data = bz2.BZ2File('Models/comp_randomFC.pbz2','rb')
 predictor = pickle.load(data)
 #  = joblib.load("Models/synthetic_ml_model.pkl")
+syndata = bz2.BZ2File('Models/syn_model.pbz2','rb')
+synPredictor = pickle.load(syndata)
 
 if st.button('Predict'):
   my_dataFrame['PolicyDuration'] = (my_dataFrame['POL_EXPIRY_DATE'] - my_dataFrame['POL_ISSUE_DATE'] ).dt.days
   my_dataFrame['EffectivePolicyDuration'] = (my_dataFrame['POL_EXPIRY_DATE'] - my_dataFrame['POL_EFF_DATE'] ).dt.days
-  X = my_dataFrame[['EXECUTIVE', 'BODY', 'MAKE', 'MODEL', 'USE_OF_VEHICLE','MODEL_YEAR',  'REGN', 'SUM INSURED',
-            'PREMIUM2', 'VEH_SEATS', 'PRODUCT', 'POLICYTYPE','Nationality', 'PolicyDuration','EffectivePolicyDuration']]
+  X = my_dataFrame[['EXECUTIVE', 'BODY', 'MAKE', 'MODEL', 'USE_OF_VEHICLE','MODEL_YEAR',  'REGN', 'SUM INSURED','PREMIUM2', 'VEH_SEATS', 'PRODUCT', 'POLICYTYPE','Nationality', 'PolicyDuration','EffectivePolicyDuration']]
   X = X.apply(lambda x: encoder[x.name].transform(x) if x.dtype=='object' else x)
   predict = predictor.predict(X)
   predict_prob = predictor.predict_proba(X)
   conversion_rate = predict_prob[0][0]
   no_conversion_rate = predict_prob[0][1]
   st.info(f"(According to Model Trained on Real Data) Risk of Claim Filling {conversion_rate*100}% \n")
-#   predict = predictor1.predict(X)
-#   predict_prob1 = predictor1.predict_proba(X)
-#   conversion_rate = predict_prob1[0][0]
-#   no_conversion_rate = predict_prob1[0][1]
-#   st.info(f"(According to Model Trained on Synthetic Data) Risk of Claim Filling {conversion_rate*100}% \n")
+  predict = synPredictor.predict(X)
+  predict_prob1 = synPredictor.predict_proba(X)
+  conversion_rate1 = predict_prob1[0][0]
+  no_conversion_rate1 = predict_prob1[0][1]
+  st.info(f"(According to Model Trained on Synthetic Data) Risk of Claim Filling {conversion_rate1*100}% \n")
   st.balloons()
